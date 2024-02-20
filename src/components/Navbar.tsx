@@ -1,13 +1,13 @@
-import { useState } from "react";
+// import { useState } from "react";
 import ConnectButton from "./Web3ModalProvider";
 
 export default function Navbar() {
-  const [openMenu, setOpenMenu] = useState(false);
+  //   const [openMenu, setOpenMenu] = useState(false);
   return (
     <nav className="border-gray-200">
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-        <a href="/" className="flex items-center space-x-3 rtl:space-x-reverse">
-          <img src="/vite.svg" className="h-8" alt="Logo" />
+        <a href="/" className="flex items-center space-x-2 rtl:space-x-reverse">
+          <img src="/logo.png" className="h-10 invert" alt="Logo" />
           <span className="self-center text-2xl font-semibold whitespace-nowrap">
             Chizu
           </span>
@@ -30,7 +30,7 @@ export default function Navbar() {
             <ConnectButton />
           </button>
 
-          <button
+          {/* <button
             data-collapse-toggle="navbar-user"
             type="button"
             className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200"
@@ -54,9 +54,9 @@ export default function Navbar() {
                 d="M1 1h15M1 7h15M1 13h15"
               />
             </svg>
-          </button>
+          </button> */}
         </div>
-        <div
+        {/* <div
           className={`items-center justify-between ${
             openMenu ? "block" : "hidden"
           } w-full md:flex md:w-auto md:order-1`}
@@ -69,7 +69,7 @@ export default function Navbar() {
                 className="block py-2 px-3 bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0"
                 aria-current="page"
               >
-                Home
+                Mint NFTs
               </a>
             </li>
             <li>
@@ -105,7 +105,7 @@ export default function Navbar() {
               </a>
             </li>
           </ul>
-        </div>
+        </div> */}
       </div>
     </nav>
   );

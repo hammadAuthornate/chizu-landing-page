@@ -21,19 +21,23 @@ const ChizuAbi = [
   "function name() view returns (string)",
   "function symbol() view returns (string)",
   "function balanceOf(address) view returns (uint)",
-  //   "function transfer(address to, uint amount)",
-  //   "event Transfer(address indexed from, address indexed to, uint amount)",
-  "function mint(uint payableAmount, uint quantity)",
+  //   "function mint(uint payableAmount, uint quantity)",
+  "function mint(uint256 quantity) external payable",
 ];
 
 export default function SmartContract() {
   const [foundersPassToken, setFoundersPassToken] = useState(null);
   const [execFoundersPassToken, setExecFoundersPassToken] = useState(null);
+  const [currentUserBalance, setCurrentUserBalance] = useState<
+    number | string | null
+  >(null);
   const { address, isConnected } = useWeb3ModalAccount();
   const { walletProvider } = useWeb3ModalProvider();
 
   const [mintPrice, setMintPrice] = useState(0.003);
   const [freeMints, setFreeMints] = useState(0);
+
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (isConnected) {
@@ -58,7 +62,9 @@ export default function SmartContract() {
       console.log(address);
       const USDTContract = new Contract(ChizuAddress, ChizuAbi, signer);
       const USDTBalance = await USDTContract.balanceOf(address);
-      console.log(formatUnits(USDTBalance, 18));
+      const formatedBalance = formatUnits(USDTBalance, 18);
+      console.log(formatedBalance);
+      setCurrentUserBalance(formatedBalance);
 
       const FoundersPassContract = new Contract(foundersPass, ChizuAbi, signer);
       const foundersPassBalance = await FoundersPassContract.balanceOf(address);
@@ -94,9 +100,11 @@ export default function SmartContract() {
         setMintPrice(0.003);
         setFreeMints(0);
       }
+      setErrorMessage(null);
     } catch (e) {
       alert("there was an error fetching user balance.");
       console.error("error occurred when fetching details", e);
+      setErrorMessage(e as string);
     }
   }
 
@@ -115,63 +123,105 @@ export default function SmartContract() {
       const quantityValue = toBigInt(1);
       //   const quantityValue = formatUnits("1", 18);
       console.log("quantity ", quantityValue);
-      const mintToken = await contract.mint(parsedPrice, quantityValue);
+      const mintToken = await contract.mint(
+        // parsedPrice.toString()
+        quantityValue.toString()
+      );
+      const res = await mintToken.wait();
       console.log(mintToken);
+      console.log(res);
+      setErrorMessage(null);
     } catch (e) {
       console.error("error occcured while minitng", e);
+      setErrorMessage(e as string);
     }
   }
 
   return (
     <>
       <div className="flex justify-center my-5 mt-10">
-        <button className="bg-blue-400 rounded-xl p-2" onClick={getBalance}>
+        <button
+          className="bg-blue-400 rounded-xl py-2 px-6 font-bold"
+          onClick={getBalance}
+        >
           {foundersPassToken !== null ? "Refresh" : "Get"} User Balance
         </button>
       </div>
-      <div>
-        {foundersPassToken !== null && (
-          <div className="my-2">
-            {foundersPassToken === 0n ? (
-              <div className="p-4 bg-red-700 font-light text-center">
-                You Do Not have the Founders Pass
-              </div>
-            ) : (
-              <div className="p-2 bg-green-500 font-bold text-center">
-                You Have the Founders Pass
+      <div className="flex justify-center ">
+        <div className="bg-slate-900 max-w-lg w-full rounded-2xl p-10 shadow-2xl drop-shadow-2xl shadow-purple-600">
+          <div>
+            {currentUserBalance !== null && (
+              <div className="text-center text-lg">
+                <u>Current Balance:</u> {currentUserBalance}
               </div>
             )}
           </div>
-        )}
-      </div>
-      <div>
-        {execFoundersPassToken !== null && (
-          <div className="my-2">
-            {execFoundersPassToken === 0n ? (
-              <div className="p-4 bg-red-700 font-light text-center">
-                You Do Not have the Executive Founders Pass
-              </div>
-            ) : (
-              <div className="p-2 bg-green-500 font-bold text-center">
-                You Have the Executive Founders Pass
+          <div className="flex justify-center">
+            {foundersPassToken !== null && (
+              <div className="my-2">
+                {foundersPassToken === 0n ? (
+                  <div className="p-2 bg-purple-700 font-light text-center max-w-sm rounded-xl">
+                    <img src="/cross.svg" alt="" className="inline" />
+                    You Do Not have the Founders Pass
+                  </div>
+                ) : (
+                  <div className="p-2 bg-blue-500 font-bold text-center">
+                    <img src="/check.svg" alt="" className="inline" />
+                    You Have the Founders Pass
+                  </div>
+                )}
               </div>
             )}
           </div>
+          <div className="flex justify-center">
+            {execFoundersPassToken !== null && (
+              <div className="my-2">
+                {execFoundersPassToken === 0n ? (
+                  <div className="p-2 bg-purple-700 font-light text-center max-w-sm rounded-xl">
+                    <img src="/cross.svg" alt="" className="inline" />
+                    You Do Not have the Executive Founders Pass
+                  </div>
+                ) : (
+                  <div className="p-2 bg-blue-500 font-bold text-center">
+                    <img src="/check.svg" alt="" className="inline" />
+                    You Have the Executive Founders Pass
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          {isConnected ? (
+            <div>
+              <div className="text-center text-blue-400 font-bold text-2xl text-balance">
+                NFT Minting Price: {mintPrice.toString()} ETH d
+              </div>
+              <div>
+                {freeMints !== 0 && (
+                  <div>You can mint {freeMints} NFTs for free.</div>
+                )}
+              </div>
+              <div className="mt-5 flex justify-center">
+                <button
+                  onClick={MintToken}
+                  className="bg-green-600 py-2 px-10 rounded-full font-bold text-lg"
+                >
+                  Mint NFTs
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="animate-bounce text-center">
+              Waiting for Wallet to Connect...
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="flex justify-center">
+        {errorMessage && (
+          <div className="bg-red-800 text-center p-2 rounded-3xl z-50 my-5">
+            An Error Has Occured!
+          </div>
         )}
-      </div>
-      <div className="text-center text-blue-300 font-bold text-2xl">
-        You can Mint The NFTs with a price of {mintPrice.toString()} ETH
-      </div>
-      <div>
-        {freeMints !== 0 && <div>You can mint {freeMints} NFTs for free.</div>}
-      </div>
-      <div className="mt-5 flex justify-center">
-        <button
-          onClick={MintToken}
-          className="bg-green-500 p-3 rounded-full font-bold text-lg"
-        >
-          Mint NFTs
-        </button>
       </div>
     </>
   );
