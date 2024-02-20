@@ -1,13 +1,12 @@
-import ConnectButton from "./Web3ModalProvider";
+import Navbar from "./components/Navbar";
+import SmartContract from "./components/SmartContract";
 
 function App() {
   return (
-    <>
-      <div>
-        <h1 className="text-3xl font-bold underline">Hello world!</h1>
-        <ConnectButton />
-      </div>
-    </>
+    <div className="bg-slate-900 h-screen w-screen text-slate-300">
+      <Navbar />
+      <SmartContract />
+    </div>
   );
 }
 
