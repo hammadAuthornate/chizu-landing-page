@@ -2,8 +2,14 @@ import {
   useWeb3ModalProvider,
   useWeb3ModalAccount,
 } from "@web3modal/ethers/react";
-import { BrowserProvider, Contract, formatUnits, parseEther } from "ethers";
-import { useState } from "react";
+import {
+  BrowserProvider,
+  Contract,
+  formatUnits,
+  parseEther,
+  toBigInt,
+} from "ethers";
+import { useEffect, useState } from "react";
 
 const ChizuAddress = "0xD73220Cb4715C566b8e1666fAace44B8a3979790";
 
@@ -15,8 +21,8 @@ const ChizuAbi = [
   "function name() view returns (string)",
   "function symbol() view returns (string)",
   "function balanceOf(address) view returns (uint)",
-  "function transfer(address to, uint amount)",
-  "event Transfer(address indexed from, address indexed to, uint amount)",
+  //   "function transfer(address to, uint amount)",
+  //   "event Transfer(address indexed from, address indexed to, uint amount)",
   "function mint(uint payableAmount, uint quantity)",
 ];
 
@@ -28,6 +34,12 @@ export default function SmartContract() {
 
   const [mintPrice, setMintPrice] = useState(0.003);
   const [freeMints, setFreeMints] = useState(0);
+
+  useEffect(() => {
+    if (isConnected) {
+      getBalance();
+    }
+  }, [isConnected]);
 
   async function getBalance() {
     if (!isConnected) {
@@ -46,7 +58,6 @@ export default function SmartContract() {
       console.log(address);
       const USDTContract = new Contract(ChizuAddress, ChizuAbi, signer);
       const USDTBalance = await USDTContract.balanceOf(address);
-
       console.log(formatUnits(USDTBalance, 18));
 
       const FoundersPassContract = new Contract(foundersPass, ChizuAbi, signer);
@@ -93,14 +104,18 @@ export default function SmartContract() {
     try {
       const ethersProvider = new BrowserProvider(walletProvider!);
       const signer = await ethersProvider.getSigner();
-      const USDTContract = new Contract(ChizuAddress, ChizuAbi, signer);
-      const USDTBalance = await USDTContract.balanceOf(address);
-      console.log(USDTBalance);
+      const contract = new Contract(ChizuAddress, ChizuAbi, signer);
+      const balance = await contract.balanceOf(address);
+      console.log("user balance ", balance);
 
-      const mintToken = await USDTContract.mint(
-        parseEther(mintPrice.toString()),
-        1
-      );
+      console.log("minting price ", mintPrice);
+      const parsedPrice = parseEther(mintPrice.toString());
+      console.log("minting price parsed ", parsedPrice);
+
+      const quantityValue = toBigInt(1);
+      //   const quantityValue = formatUnits("1", 18);
+      console.log("quantity ", quantityValue);
+      const mintToken = await contract.mint(parsedPrice, quantityValue);
       console.log(mintToken);
     } catch (e) {
       console.error("error occcured while minitng", e);
@@ -109,7 +124,7 @@ export default function SmartContract() {
 
   return (
     <>
-      <div className="flex justify-center">
+      <div className="flex justify-center my-5 mt-10">
         <button className="bg-blue-400 rounded-xl p-2" onClick={getBalance}>
           {foundersPassToken !== null ? "Refresh" : "Get"} User Balance
         </button>
@@ -118,11 +133,11 @@ export default function SmartContract() {
         {foundersPassToken !== null && (
           <div className="my-2">
             {foundersPassToken === 0n ? (
-              <div className="p-4 bg-red-700 font-light">
+              <div className="p-4 bg-red-700 font-light text-center">
                 You Do Not have the Founders Pass
               </div>
             ) : (
-              <div className="p-2 bg-green-500 font-bold">
+              <div className="p-2 bg-green-500 font-bold text-center">
                 You Have the Founders Pass
               </div>
             )}
@@ -133,25 +148,28 @@ export default function SmartContract() {
         {execFoundersPassToken !== null && (
           <div className="my-2">
             {execFoundersPassToken === 0n ? (
-              <div className="p-4 bg-red-700 font-light">
+              <div className="p-4 bg-red-700 font-light text-center">
                 You Do Not have the Executive Founders Pass
               </div>
             ) : (
-              <div className="p-2 bg-green-500 font-bold">
+              <div className="p-2 bg-green-500 font-bold text-center">
                 You Have the Executive Founders Pass
               </div>
             )}
           </div>
         )}
       </div>
-      <div className="text-center">
+      <div className="text-center text-blue-300 font-bold text-2xl">
         You can Mint The NFTs with a price of {mintPrice.toString()} ETH
       </div>
       <div>
         {freeMints !== 0 && <div>You can mint {freeMints} NFTs for free.</div>}
       </div>
       <div className="mt-5 flex justify-center">
-        <button onClick={MintToken} className="bg-green-500 p-3 rounded-full">
+        <button
+          onClick={MintToken}
+          className="bg-green-500 p-3 rounded-full font-bold text-lg"
+        >
           Mint NFTs
         </button>
       </div>
