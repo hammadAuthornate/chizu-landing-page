@@ -139,7 +139,11 @@ export default function SmartContract() {
 
   return (
     <>
-      <div className="flex justify-center my-5 mt-10">
+      <div className="my-8 mt-20 font-extrabold text-4xl text-center bg-clip-text text-transparent bg-gradient-to-r from-pink-400 to-violet-400">
+        Chizu Token Minter
+      </div>
+
+      <div id="mint" className="flex justify-center my-5 mt-10">
         <button
           className="bg-blue-400 rounded-xl py-2 px-6 font-bold"
           onClick={getBalance}
@@ -147,8 +151,9 @@ export default function SmartContract() {
           {foundersPassToken !== null ? "Refresh" : "Get"} User Balance
         </button>
       </div>
+
       <div className="flex justify-center ">
-        <div className="bg-slate-900 max-w-lg w-full rounded-2xl p-10 shadow-2xl drop-shadow-2xl shadow-purple-600">
+        <div className="bg-slate-900/50 max-w-lg w-full rounded-2xl p-10 shadow-2xl drop-shadow-2xl shadow-purple-600">
           <div>
             {currentUserBalance !== null && (
               <div className="text-center text-lg">
@@ -193,7 +198,7 @@ export default function SmartContract() {
           {isConnected ? (
             <div>
               <div className="text-center text-blue-400 font-bold text-2xl text-balance">
-                NFT Minting Price: {mintPrice.toString()} ETH d
+                NFT Minting Price: {mintPrice.toString()} ETH
               </div>
               <div>
                 {freeMints !== 0 && (
@@ -214,14 +219,14 @@ export default function SmartContract() {
               Waiting for Wallet to Connect...
             </div>
           )}
-        </div>
-      </div>
-      <div className="flex justify-center">
-        {errorMessage && (
-          <div className="bg-red-800 text-center p-2 rounded-3xl z-50 my-5">
-            An Error Has Occured!
+          <div className="flex justify-center">
+            {errorMessage && (
+              <div className="bg-red-800 text-center p-2 rounded-3xl z-50 my-5">
+                An Error Has Occured!
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </>
   );
