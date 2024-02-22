@@ -62,7 +62,7 @@ export default function FAQ() {
 
   return (
     <div className="mt-20 flex flex-col items-center">
-      <div className="max-w-xl">
+      <div className="max-w-xl w-full">
         <div className="my-8 font-extrabold text-4xl text-center bg-clip-text text-transparent bg-gradient-to-r from-pink-400 to-violet-400">
           Frequently Asked Questions
         </div>
