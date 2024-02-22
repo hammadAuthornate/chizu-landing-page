@@ -39,6 +39,10 @@ export default function SmartContract() {
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const [userSelectedQuantity, setUserSelectedQuantity] = useState<
+    number | null
+  >(null);
+  const [noQuantityError, setNoQuantityError] = useState(false);
   useEffect(() => {
     if (isConnected) {
       getBalance();
@@ -86,7 +90,7 @@ export default function SmartContract() {
       if (foundersPassBalance !== 0n && execfoundersPassBalance !== 0n) {
         console.log("user has both Passes");
         setMintPrice(0.001);
-        setFreeMints(5);
+        setFreeMints(4);
       } else if (foundersPassBalance === 0n && execfoundersPassBalance !== 0n) {
         console.log("user has the exec founders pass");
         setMintPrice(0.001);
@@ -97,7 +101,7 @@ export default function SmartContract() {
         setFreeMints(1);
       } else if (foundersPassBalance === 0n && execfoundersPassBalance === 0n) {
         console.log("user has no passes");
-        setMintPrice(0.003);
+        setMintPrice(0.001);
         setFreeMints(0);
       }
       setErrorMessage(null);
@@ -109,6 +113,12 @@ export default function SmartContract() {
   }
 
   async function MintToken() {
+    if (userSelectedQuantity === null) {
+      setNoQuantityError(true);
+      return null;
+    } else {
+      setNoQuantityError(false);
+    }
     try {
       const ethersProvider = new BrowserProvider(walletProvider!);
       const signer = await ethersProvider.getSigner();
@@ -120,9 +130,9 @@ export default function SmartContract() {
       const parsedPrice = parseEther(mintPrice.toString());
       console.log("minting price parsed ", parsedPrice);
 
-      const quantityValue = toBigInt(1);
+      const quantityValue = toBigInt(userSelectedQuantity || 1);
       //   const quantityValue = formatUnits("1", 18);
-      console.log("quantity ", quantityValue);
+      console.log("quantity ", userSelectedQuantity);
       const mintToken = await contract.mint(
         // parsedPrice.toString()
         quantityValue.toString()
@@ -205,6 +215,20 @@ export default function SmartContract() {
                   <div>You can mint {freeMints} NFTs for free.</div>
                 )}
               </div>
+              <input
+                value={userSelectedQuantity?.toString()}
+                onChange={(e) => {
+                  setUserSelectedQuantity(parseInt(e.target.value) || null);
+                  console.log(userSelectedQuantity);
+                }}
+                type="number"
+                min={1}
+                max={20}
+                placeholder="Enter Quantity of NFTs to mint"
+                className={`w-full p-2 bg-indigo-500/20 border rounded-full mt-5 text-center ${
+                  noQuantityError ? "border-red-600 border-4" : ""
+                }`}
+              />
               <div className="mt-5 flex justify-center">
                 <button
                   onClick={MintToken}
