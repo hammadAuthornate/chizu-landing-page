@@ -43,6 +43,7 @@ export default function SmartContract() {
     number | null
   >(null);
   const [noQuantityError, setNoQuantityError] = useState(false);
+
   useEffect(() => {
     if (isConnected) {
       getBalance();
@@ -64,9 +65,9 @@ export default function SmartContract() {
       const signer = await ethersProvider.getSigner();
       // The Contract object
       console.log(address);
-      const USDTContract = new Contract(ChizuAddress, ChizuAbi, signer);
-      const USDTBalance = await USDTContract.balanceOf(address);
-      const formatedBalance = formatUnits(USDTBalance, 18);
+      const ChizuContract = new Contract(ChizuAddress, ChizuAbi, signer);
+      const ChizuBalance = await ChizuContract.balanceOf(address);
+      const formatedBalance = formatUnits(ChizuBalance, 18);
       console.log(formatedBalance);
       setCurrentUserBalance(formatedBalance);
 
@@ -85,7 +86,6 @@ export default function SmartContract() {
       );
       console.log("exec founders pass", execfoundersPassBalance);
       setExecFoundersPassToken(execfoundersPassBalance);
-      //   console.log(execfoundersPassBalance === 0n);
 
       if (foundersPassBalance !== 0n && execfoundersPassBalance !== 0n) {
         console.log("user has both Passes");
@@ -104,6 +104,7 @@ export default function SmartContract() {
         setMintPrice(0.001);
         setFreeMints(0);
       }
+
       setErrorMessage(null);
     } catch (e) {
       alert("there was an error fetching user balance.");
@@ -126,19 +127,23 @@ export default function SmartContract() {
       const balance = await contract.balanceOf(address);
       console.log("user balance ", balance);
 
-      console.log("minting price ", mintPrice);
-      const parsedPrice = parseEther(mintPrice.toString());
-      console.log("minting price parsed ", parsedPrice);
+      console.log("minting price in ETH", mintPrice);
+      const parsedPriceinWei = parseEther(mintPrice.toString());
+      console.log("minting price parsed to wei", parsedPriceinWei);
 
       const quantityValue = toBigInt(userSelectedQuantity || 1);
-      //   const quantityValue = formatUnits("1", 18);
-      console.log("quantity ", userSelectedQuantity);
-      const mintToken = await contract.mint(
-        // parsedPrice.toString()
-        quantityValue.toString()
+      const quantityValueFormatted = formatUnits(quantityValue, 18);
+      console.log(
+        "FINAL DATA: \nquantity selected:",
+        userSelectedQuantity,
+        " & mint price in Wei: ",
+        quantityValueFormatted
       );
-      const res = await mintToken.wait();
+      const mintToken = await contract.mint(userSelectedQuantity.toString(), {
+        value: parsedPriceinWei,
+      });
       console.log(mintToken);
+      const res = await mintToken.wait();
       console.log(res);
       setErrorMessage(null);
     } catch (e) {
@@ -219,11 +224,10 @@ export default function SmartContract() {
                 value={userSelectedQuantity?.toString()}
                 onChange={(e) => {
                   setUserSelectedQuantity(parseInt(e.target.value) || null);
-                  console.log(userSelectedQuantity);
                 }}
                 type="number"
                 min={1}
-                max={20}
+                max={100}
                 placeholder="Enter Quantity of NFTs to mint"
                 className={`w-full p-2 bg-indigo-500/20 border rounded-full mt-5 text-center ${
                   noQuantityError ? "border-red-600 border-4" : ""
